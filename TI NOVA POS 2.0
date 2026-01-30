@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>TI Nova POS 2.0 | Web</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary: #4361ee; --bg: #f8faff; --card: #ffffff; --text: #1b254b;
+            --secondary: #707eae; --success: #01b574; --danger: #ee5d50;
+        }
+
+        * { 
+            margin: 0; padding: 0; box-sizing: border-box; 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+
+        body { 
+            background: var(--bg); color: var(--text); 
+            overflow-x: hidden; width: 100%; height: 100vh;
+        }
+
+        /* --- Modern Opening Page --- */
+        #opening-page {
+            position: fixed; inset: 0; background: #020617; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 10000; transition: 1.2s cubic-bezier(0.85, 0, 0.15, 1);
+            overflow: hidden;
+        }
+
+        .light-blob {
+            position: absolute; width: 300px; height: 300px;
+            background: radial-gradient(circle, rgba(67, 97, 238, 0.4) 0%, rgba(67, 97, 238, 0) 70%);
+            filter: blur(60px); border-radius: 50%; z-index: 1;
+            animation: move 10s infinite alternate;
+        }
+        .blob-1 { top: -50px; left: -50px; }
+        .blob-2 { bottom: -50px; right: -50px; animation-delay: -5s; }
+
+        @keyframes move {
+            from { transform: translate(0, 0) scale(1); }
+            to { transform: translate(100px, 50px) scale(1.2); }
+        }
+
+        .glass-box {
+            position: relative; z-index: 2; padding: 40px; width: 85%; max-width: 400px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 40px; text-align: center;
+        }
+
+        .logo-box h1 { 
+            font-size: 42px; font-weight: 800; color: white; letter-spacing: -1.5px;
+            opacity: 0; transform: translateY(20px);
+            animation: fadeInUp 0.8s ease forwards 0.3s;
+        }
+
+        .logo-box p { 
+            color: #94a3b8; font-weight: 600; letter-spacing: 5px; font-size: 10px; margin-top: 5px;
+            opacity: 0; animation: fadeIn 1s ease forwards 1s;
+        }
+
+        .btn-start {
+            margin-top: 40px; padding: 18px 0; width: 100%; border-radius: 16px; border: none;
+            background: white; color: #020617; font-weight: 800; font-size: 16px;
+            cursor: pointer; transition: 0.4s; z-index: 2;
+            opacity: 0; transform: scale(0.9);
+            animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards 1.3s;
+        }
+
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { to { opacity: 1; } }
+        @keyframes popIn { to { opacity: 1; transform: scale(1); } }
+
+        /* --- Web Dashboard Layout --- */
+        #main-content { 
+            display: none; opacity: 0; transition: 1s; 
+            max-width: 600px; margin: 0 auto; padding-bottom: 100px;
+        }
+
+        header { padding: 30px 20px; display: flex; justify-content: space-between; align-items: center; }
+
+        .container { padding: 0 20px; }
+
+        .wallet-card {
+            background: linear-gradient(135deg, #1e293b 0%, #4361ee 100%);
+            border-radius: 30px; padding: 25px; color: white; margin-bottom: 25px;
+            box-shadow: 0 20px 40px rgba(67, 97, 238, 0.2);
+        }
+
+        .chart-card { background: var(--card); border-radius: 24px; padding: 16px; margin-bottom: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+
+        .order-card {
+            background: var(--card); border-radius: 22px; padding: 20px; margin-bottom: 15px;
+            border: 1px solid #f1f4f9; display: flex; flex-direction: column;
+            transition: 0.3s;
+        }
+        .order-card:active { transform: scale(0.98); background: #fcfdfe; }
+
+        .receipt-ui { text-align: center; padding: 10px; }
+        .receipt-header { border-bottom: 1.5px dashed #e2e8f0; padding-bottom: 20px; margin-bottom: 20px; }
+        .receipt-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; }
+        .receipt-footer { background: #f8fafc; padding: 15px; border-radius: 15px; margin-top: 20px; font-weight: 700; }
+
+        .fab {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            width: 70px; height: 70px; background: var(--primary); color: white; 
+            border-radius: 25px; display: flex; align-items: center; justify-content: center; 
+            font-size: 35px; box-shadow: 0 15px 30px rgba(67, 97, 238, 0.4); border: none; z-index: 1000;
+        }
+
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 2000; display: none; align-items: flex-end; justify-content: center; }
+        .modal-content { background: white; width: 100%; max-width: 500px; border-radius: 30px 30px 0 0; padding: 30px; animation: slideUp 0.4s ease-out; }
+
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        input { width: 100%; padding: 16px; border-radius: 14px; border: 1px solid #edf2f7; background: #f7fafc; margin-bottom: 12px; outline: none; font-size: 16px; }
+        .btn-action { background: var(--primary); color: white; width: 100%; padding: 18px; border: none; border-radius: 16px; font-weight: 800; cursor: pointer; font-size: 16px; }
+
+    </style>
+</head>
+<body>
+
+    <div id="opening-page">
+        <div class="light-blob blob-1"></div>
+        <div class="light-blob blob-2"></div>
+        <div class="glass-box">
+            <div class="logo-box">
+                <h1>TI Nova</h1>
+                <p>POS 2.0 WEB SYSTEM</p>
+            </div>
+            <button class="btn-start" onclick="startApp()">Enter Dashboard</button>
+        </div>
+    </div>
+
+    <div id="main-content">
+        <header>
+            <div>
+                <p style="font-size: 11px; font-weight: 700; color: var(--secondary); text-transform: uppercase;">Cloud Synced</p>
+                <h2 style="font-weight: 800; color: var(--primary); font-size: 24px;">Dashboard</h2>
+            </div>
+            <div id="liveTime" style="font-size: 15px; font-weight: 800; background: #fff; padding: 8px 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);"></div>
+        </header>
+
+        <div class="container">
+            <div class="wallet-card">
+                <p style="font-size: 11px; font-weight: 700; opacity: 0.8; letter-spacing: 1px;">TOTAL REVENUE (BDT)</p>
+                <h1 id="totalRevenue" style="font-size: 42px; margin: 10px 0 20px;">৳0</h1>
+                <div style="display: flex; gap: 40px;">
+                    <div><p style="font-size: 10px; opacity: 0.8; margin-bottom: 4px;">Due Amount</p><b id="totalDue" style="font-size: 20px;">৳0</b></div>
+                    <div><p style="font-size: 10px; opacity: 0.8; margin-bottom: 4px;">Sales Count</p><b id="transCount" style="font-size: 20px;">0</b></div>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <p style="font-size: 12px; font-weight: 800; margin-bottom: 15px; color: var(--secondary);">SALES ANALYTICS</p>
+                <canvas id="revenueChart" style="max-height: 160px;"></canvas>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="font-weight: 800; font-size: 18px;">Recent Sales</h3>
+                <input type="text" id="searchInput" onkeyup="searchLog()" placeholder="Search..." style="width: 140px; padding: 10px; border-radius: 12px; margin-bottom: 0; font-size: 14px;">
+            </div>
+
+            <div id="orderList"></div>
+        </div>
+    </div>
+
+    <button class="fab" onclick="toggleModal('entryModal', true)">+</button>
+
+    <div id="entryModal" class="modal" onclick="if(event.target==this) toggleModal('entryModal', false)">
+        <div class="modal-content">
+            <div style="width: 40px; height: 5px; background: #e2e8f0; border-radius: 10px; margin: -15px auto 20px;"></div>
+            <h3 style="margin-bottom: 20px; font-weight: 800; text-align: center; font-size: 20px;">New Transaction</h3>
+            <input type="text" id="cName" placeholder="Customer Name">
+            <input type="tel" id="cPhone" placeholder="Phone Number">
+            <input type="text" id="cService" placeholder="Service / Product Details">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <input type="number" id="cPrice" placeholder="Total Price">
+                <input type="number" id="cPaid" placeholder="Paid Amount">
+            </div>
+            <button class="btn-action" onclick="addEntry()">Complete Order</button>
+            <p style="text-align: center; margin-top: 15px; font-size: 12px; color: var(--secondary);" onclick="toggleModal('entryModal', false)">Cancel and Go Back</p>
+        </div>
+    </div>
+
+    <div id="receiptModal" class="modal" onclick="if(event.target==this) toggleModal('receiptModal', false)">
+        <div class="modal-content" id="receiptContent" style="border-radius: 30px 30px 0 0;"></div>
+    </div>
+
+<script>
+    let db = JSON.parse(localStorage.getItem('nova_v2_final_bd')) || [];
+    let myChart;
+
+    function getBDTime() {
+        return new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour: '2-digit', minute: '2-digit', hour12: true });
+    }
+    function getBDDate() {
+        return new Date().toLocaleDateString('en-GB', { timeZone: 'Asia/Dhaka', day: '2-digit', month: 'short', year: 'numeric' });
+    }
+
+    setInterval(() => { 
+        const timeEl = document.getElementById('liveTime');
+        if(timeEl) timeEl.innerText = getBDTime(); 
+    }, 1000);
+
+    function startApp() {
+        const op = document.getElementById('opening-page');
+        const mc = document.getElementById('main-content');
+        op.style.transform = 'translateY(-100%)';
+        setTimeout(() => { 
+            op.style.display = 'none'; 
+            mc.style.display = 'block';
+            setTimeout(() => mc.style.opacity = '1', 50);
+            render();
+        }, 1000);
+    }
+
+    function toggleModal(id, show) { 
+        document.getElementById(id).style.display = show ? 'flex' : 'none'; 
+    }
+
+    function addEntry() {
+        const name = document.getElementById('cName').value;
+        const price = parseFloat(document.getElementById('cPrice').value) || 0;
+        const paid = parseFloat(document.getElementById('cPaid').value) || 0;
+
+        if(!name || price <= 0) return alert("Please enter valid customer name and total price.");
+
+        const order = {
+            id: Date.now(), orderNo: 'TN' + Math.floor(1000 + Math.random() * 9000),
+            name, phone: document.getElementById('cPhone').value || 'N/A',
+            service: document.getElementById('cService').value || 'General Service',
+            price, paid, date: getBDDate(), time: getBDTime()
+        };
+
+        db.unshift(order);
+        sync();
+        toggleModal('entryModal', false);
+        ['cName','cPhone','cService','cPrice','cPaid'].forEach(i => document.getElementById(i).value = '');
+        showReceipt(order.id);
+    }
+
+    function sync() { 
+        localStorage.setItem('nova_v2_final_bd', JSON.stringify(db)); 
+        render(); 
+    }
+
+    function showReceipt(id) {
+        const item = db.find(o => o.id === id);
+        const due = item.price - item.paid;
+        
+        document.getElementById('receiptContent').innerHTML = `
+            <div class="receipt-ui">
+                <div class="receipt-header">
+                    <h2 style="color:var(--primary); font-weight:800; font-size:24px;">TI NOVA</h2>
+                    <p style="font-size:10px; color:var(--secondary); letter-spacing:3px; margin-top:5px; font-weight:700;">DIGITAL INVOICE</p>
+                </div>
+                <div class="receipt-row"><span>Order ID</span><b>#${item.orderNo}</b></div>
+                <div class="receipt-row"><span>Customer</span><b>${item.name}</b></div>
+                <div class="receipt-row"><span>Description</span><b>${item.service}</b></div>
+                <div class="receipt-row"><span>Date</span><b>${item.date}</b></div>
+                <hr style="border:none; border-top:1.5px dashed #eee; margin:15px 0;">
+                <div class="receipt-row" style="font-size:18px;"><span>Total</span><b>৳${item.price}</b></div>
+                <div class="receipt-row" style="color:var(--success);"><span>Paid</span><b>৳${item.paid}</b></div>
+                <div class="receipt-footer" style="color: ${due > 0 ? 'var(--danger)' : 'var(--success)'}; font-size: 16px;">
+                    ${due > 0 ? 'Due Remaining: ৳' + due : 'FULLY PAID ✓'}
+                </div>
+                <button class="btn-action" style="margin-top:20px; background:#f1f4f9; color:var(--text);" onclick="toggleModal('receiptModal', false)">Back to Dashboard</button>
+            </div>
+        `;
+        toggleModal('receiptModal', true);
+    }
+
+    function render() {
+        const list = document.getElementById('orderList');
+        list.innerHTML = '';
+        let rev = 0, due = 0;
+
+        db.forEach(item => {
+            const itemDue = item.price - item.paid;
+            rev += item.paid; due += itemDue;
+            list.innerHTML += `
+                <div class="order-card" onclick="showReceipt(${item.id})">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <span style="font-size:11px; font-weight:800; color:var(--primary); background:rgba(67,97,238,0.1); padding:4px 10px; border-radius:8px;">#${item.orderNo}</span>
+                        <span style="font-size:11px; font-weight:700; color:var(--secondary);">${item.time}</span>
+                    </div>
+                    <b style="font-size:18px; color:var(--text);">${item.name}</b>
+                    <p style="font-size:13px; color:var(--secondary); margin-top:4px;">${item.service}</p>
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:15px;">
+                        <div>
+                            <p style="font-size:10px; font-weight:700; color:var(--secondary); text-transform:uppercase;">Amount</p>
+                            <span style="font-weight:800; font-size:20px;">৳${item.price}</span>
+                        </div>
+                        <div>
+                            ${itemDue > 0 ? 
+                                `<button class="btn-action" style="padding:8px 15px; width:auto; font-size:12px; background:var(--danger);" onclick="event.stopPropagation(); clearDue(${item.id})">Pay Due ৳${itemDue}</button>` : 
+                                `<span style="color:var(--success); font-weight:800; font-size:13px;">COMPLETED ✓</span>`
+                            }
+                        </div>
+                    </div>
+                </div>`;
+        });
+        document.getElementById('totalRevenue').innerText = '৳' + rev.toLocaleString();
+        document.getElementById('totalDue').innerText = '৳' + due.toLocaleString();
+        document.getElementById('transCount').innerText = db.length;
+        updateChart();
+    }
+
+    function clearDue(id) {
+        if(confirm("Collect full remaining payment for this order?")) {
+            const idx = db.findIndex(o => o.id === id);
+            db[idx].paid = db[idx].price;
+            sync();
+        }
+    }
+
+    function searchLog() {
+        const term = document.getElementById('searchInput').value.toLowerCase();
+        document.querySelectorAll('.order-card').forEach(card => {
+            card.style.display = card.innerText.toLowerCase().includes(term) ? 'flex' : 'none';
+        });
+    }
+
+    function updateChart() {
+        const canvas = document.getElementById('revenueChart');
+        if(!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const labels = [...Array(7)].map((_, i) => {
+            const d = new Date(); d.setDate(d.getDate() - i);
+            return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+        }).reverse();
+        const data = labels.map(l => db.filter(i => i.date.includes(l)).reduce((s, i) => s + i.paid, 0));
+        
+        if(myChart) myChart.destroy();
+        myChart = new Chart(ctx, {
+            type: 'line',
+            data: { 
+                labels, 
+                datasets: [{ 
+                    data, 
+                    borderColor: '#4361ee', 
+                    tension: 0.4, 
+                    fill: true, 
+                    backgroundColor: 'rgba(67, 97, 238, 0.05)', 
+                    borderWidth: 3, 
+                    pointRadius: 4,
+                    pointBackgroundColor: '#4361ee'
+                }] 
+            },
+            options: { 
+                plugins: { legend: { display: false } }, 
+                scales: { 
+                    y: { display: false }, 
+                    x: { grid: { display: false }, ticks: { font: { size: 10, weight: '700' } } } 
+                } 
+            }
+        });
+    }
+</script>
+</body>
+</html>
