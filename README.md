@@ -2,251 +2,330 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TI Nova POS 2.0 | Trexivo</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TI NOVA POS | Premium Enterprise Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --primary: #4361ee;
-            --glass: rgba(255, 255, 255, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.3);
-            --card-grad: linear-gradient(135deg, #1e293b 0%, #4361ee 100%);
-            --text-main: #1b254b;
-            --success: #01b574;
-            --danger: #ee5d50;
-            --warning: #ffb547;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
         
-        body { background: #f4f7fe; color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
-
-        /* --- Intro Page Styling --- */
-        #intro-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--card-grad); display: flex; flex-direction: column;
-            align-items: center; justify-content: center; z-index: 9999;
-            transition: transform 0.8s cubic-bezier(0.77, 0, 0.175, 1);
-            color: white; text-align: center; padding: 20px;
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: radial-gradient(at top left, #f8faff, #e0e7ff);
+            min-height: 100vh;
+            color: #1e293b;
         }
 
-        .intro-logo {
-            font-size: 42px; font-weight: 800; letter-spacing: -2px;
-            animation: fadeInDown 1s ease; margin-bottom: 10px;
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.05);
         }
 
-        .intro-sub {
-            font-size: 14px; font-weight: 600; opacity: 0.8; letter-spacing: 3px;
-            text-transform: uppercase; animation: fadeInUp 1.2s ease; margin-bottom: 40px;
+        .grad-income { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .grad-due { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .grad-complete { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); }
+        .grad-pending { background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%); }
+        .grad-sidebar { background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%); }
+
+        .stat-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .stat-card:hover { transform: translateY(-8px); }
+
+        @media print { 
+            .no-print { display: none !important; }
+            body { background: white !important; }
+            .glass-panel { border: none !important; box-shadow: none !important; }
+            #invoiceModal { position: absolute; left: 0; top: 0; background: white !important; width: 100%; height: 100%; display: block !important; }
+            .modal-content { box-shadow: none !important; border: none !important; width: 100% !important; max-width: 100% !important; }
         }
-
-        .btn-start {
-            padding: 18px 45px; border-radius: 50px; border: none;
-            background: white; color: var(--primary); font-weight: 800;
-            font-size: 16px; cursor: pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            transition: 0.3s; animation: pulse 2s infinite;
-        }
-
-        .btn-start:hover { transform: scale(1.05); background: #f0f3ff; }
-
-        /* --- Main Content (Hidden Initially) --- */
-        #main-app { padding: 15px; display: none; flex-direction: column; opacity: 0; transition: 1s; }
-
-        /* --- Animations --- */
-        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.4); } 70% { box-shadow: 0 0 0 20px rgba(255,255,255,0); } 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); } }
-
-        /* --- POS Styling (Same as Before) --- */
-        .profit-card { background: var(--card-grad); border-radius: 28px; padding: 25px; color: white; margin-bottom: 30px; aspect-ratio: 1.8 / 1; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0px 20px 40px rgba(30, 41, 59, 0.25); }
-        .card-brand { font-size: 20px; font-weight: 800; letter-spacing: 2px; }
-        .card-chip { width: 48px; height: 38px; background: linear-gradient(135deg, #ffd700 0%, #b8860b 100%); border-radius: 8px; }
-        .glass-panel { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-radius: 30px; padding: 25px; margin-bottom: 25px; }
-        input { width: 100%; padding: 14px; border-radius: 15px; border: 1px solid #e0e5f2; background: rgba(255,255,255,0.5); font-weight: 600; outline: none; margin-bottom: 15px; }
-        .order-row { background: white; border-radius: 20px; padding: 18px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #f1f4f9; }
-        .status-badge { padding: 6px 10px; border-radius: 8px; font-size: 10px; font-weight: 800; border: none; cursor: pointer; }
-        .status-Pending { background: #fff8eb; color: var(--warning); }
-        .status-Completed { background: #e6fff5; color: var(--success); }
-        footer { margin-top: auto; padding: 25px 0 10px; text-align: center; font-size: 10px; font-weight: 800; color: #a3aed0; letter-spacing: 2px; }
-        .btn-main { width: 100%; padding: 16px; border-radius: 18px; border: none; background: var(--card-grad); color: white; font-weight: 800; cursor: pointer; }
-        #invoiceModal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; padding: 20px; }
-        .invoice-box { background: white; width: 100%; max-width: 380px; border-radius: 30px; padding: 40px 30px; position: relative; }
-        .invoice-box::before { content: ""; position: absolute; top:0; left:0; width:100%; height:8px; background: var(--card-grad); border-radius: 30px 30px 0 0; }
-        .invoice-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; }
     </style>
 </head>
-<body>
+<body class="flex">
 
-    <div id="intro-screen">
-        <div class="intro-logo">TI NOVA POS 2.0</div>
-        <div class="intro-sub">Powered by TREXIVO IT</div>
-        <button class="btn-start" onclick="startApp()">GET STARTED</button>
-    </div>
-
-    <div id="main-app">
-        <h1 style="font-weight: 800; letter-spacing: -1px; color: var(--primary); margin-bottom: 20px;">TI NOVA POS <span style="font-weight: 400; color: #a3aed0;">2.0</span></h1>
-
-        <div class="profit-card">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                <div class="card-brand">TI NOVA</div>
-                <div class="card-chip"></div>
-            </div>
-            <div>
-                <p style="font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.7; font-weight: 700;">Net Profit Balance</p>
-                <h2 id="totalRevenue">$0.00</h2>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
-                <div>
-                    <p style="font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.7; font-weight: 700;">Outstanding Due</p>
-                    <p id="totalDue" style="font-weight: 800; font-size: 18px; color: #ff8fa3;">$0.00</p>
-                </div>
-                <div style="text-align: right;">
-                    <p style="font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.7; font-weight: 700;">Premium Admin</p>
-                    <p style="font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.6);">SINCE 2026</p>
-                </div>
-            </div>
+    <aside class="w-72 fixed h-full grad-sidebar text-white hidden lg:flex flex-col p-8 z-50 no-print">
+        <div class="mb-12">
+            <h1 class="text-3xl font-extrabold tracking-tighter italic">TI NOVA <span class="text-indigo-400">POS</span></h1>
+            <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500 mt-2">Powered by Trexivo IT</p>
         </div>
-
-        <div class="glass-panel">
-            <label style="font-size: 11px; font-weight: 800; color: #707eae; margin-left: 5px;">CLIENT NAME</label>
-            <input type="text" id="cName">
-            <label style="font-size: 11px; font-weight: 800; color: #707eae; margin-left: 5px;">PHONE NUMBER</label>
-            <input type="text" id="cPhone">
-            <label style="font-size: 11px; font-weight: 800; color: #707eae; margin-left: 5px;">SERVICE</label>
-            <input type="text" id="cService">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                <div><label style="font-size: 11px; font-weight: 800; color: #707eae;">TOTAL BILL</label><input type="number" id="cPrice"></div>
-                <div><label style="font-size: 11px; font-weight: 800; color: #707eae;">PAID NOW</label><input type="number" id="cPaid"></div>
-            </div>
-            <button class="btn-main" onclick="addEntry()">CONFIRM TRANSACTION</button>
+        <nav class="space-y-3 flex-1">
+            <a href="#" class="flex items-center gap-4 p-4 bg-indigo-500/20 border border-indigo-500/30 rounded-2xl text-white font-bold shadow-lg">
+                <i class="fas fa-grid-2"></i> Dashboard
+            </a>
+            <a href="#" class="flex items-center gap-4 p-4 text-slate-400 hover:bg-white/5 rounded-2xl transition">
+                <i class="fas fa-users"></i> Clients
+            </a>
+            <a href="#" class="flex items-center gap-4 p-4 text-slate-400 hover:bg-white/5 rounded-2xl transition">
+                <i class="fas fa-file-invoice"></i> Billing
+            </a>
+        </nav>
+        <div class="mt-auto pt-6 border-t border-white/10 text-center">
+            <p class="text-[10px] text-slate-500 font-bold tracking-widest uppercase italic">Master Build v6.1</p>
         </div>
+    </aside>
 
-        <h3 style="margin: 0 0 15px 10px; font-weight: 800;">Recent Sales Log</h3>
-        <div id="orderList"></div>
-
-        <footer>POS MADE BY TREXIVO IT</footer>
-    </div>
-
-    <div id="invoiceModal">
-        <div class="invoice-box">
-            <div style="text-align: center; margin-bottom: 25px;">
-                <h2 style="color: var(--primary);">TI NOVA POS</h2>
-                <p style="font-size: 11px; color: #a3aed0; font-weight: 700;">TRANSACTION RECEIPT</p>
-            </div>
-            <div id="invoiceData"></div>
-            <button class="btn-main" onclick="document.getElementById('invoiceModal').style.display='none'">CLOSE</button>
-        </div>
-    </div>
-
-<script>
-    let db = JSON.parse(localStorage.getItem('nova_final_v6')) || [];
-
-    function startApp() {
-        const intro = document.getElementById('intro-screen');
-        const main = document.getElementById('main-app');
+    <main class="lg:ml-72 flex-1 p-6 md:p-12">
         
-        intro.style.transform = 'translateY(-100%)';
-        main.style.display = 'flex';
-        setTimeout(() => { main.style.opacity = '1'; }, 100);
-    }
+        <header class="flex flex-col md:flex-row justify-between items-center gap-6 mb-12 no-print">
+            <div>
+                <h1 class="text-4xl font-black text-slate-800 tracking-tighter italic uppercase">Welcome to TI NOVA POS</h1>
+                <p class="text-slate-500 text-sm font-semibold italic">Intelligence at your fingertips • <span class="text-indigo-600 font-bold">Trexivo IT</span></p>
+            </div>
+            
+            <div class="flex items-center gap-4 w-full md:w-auto">
+                <div class="relative flex-1 md:w-80">
+                    <i class="fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="searchInput" onkeyup="searchOrders()" placeholder="Quick Search Ledger..." 
+                           class="w-full pl-14 pr-6 py-4 glass-panel rounded-3xl border-none outline-none focus:ring-2 ring-indigo-400 font-medium">
+                </div>
+                <button onclick="openModal()" class="grad-complete text-white w-14 h-14 rounded-2xl flex items-center justify-center text-xl shadow-xl active:scale-95 transition-transform">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+        </header>
 
-    function addEntry() {
-        const name = document.getElementById('cName').value;
-        const phone = document.getElementById('cPhone').value;
-        const service = document.getElementById('cService').value;
-        const price = parseFloat(document.getElementById('cPrice').value) || 0;
-        const paid = parseFloat(document.getElementById('cPaid').value) || 0;
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12 no-print">
+            <div class="stat-card grad-income p-7 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden">
+                <p class="text-white/70 text-[10px] font-black uppercase tracking-widest">Total Income</p>
+                <h3 class="text-3xl font-black mt-2 tracking-tighter">$<span id="statIncome">0</span></h3>
+            </div>
+            <div class="stat-card grad-due p-7 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden">
+                <p class="text-white/70 text-[10px] font-black uppercase tracking-widest">Due Amount</p>
+                <h3 class="text-3xl font-black mt-2 tracking-tighter">$<span id="statDue">0</span></h3>
+            </div>
+            <div class="stat-card grad-complete p-7 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden">
+                <p class="text-white/70 text-[10px] font-black uppercase tracking-widest">Order Success</p>
+                <h3 class="text-3xl font-black mt-2 tracking-tighter" id="statConfirmed">0</h3>
+            </div>
+            <div class="stat-card grad-pending p-7 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden">
+                <p class="text-white/70 text-[10px] font-black uppercase tracking-widest">Order Pending</p>
+                <h3 class="text-3xl font-black mt-2 tracking-tighter" id="statPending">0</h3>
+            </div>
+        </div>
 
-        if(!name || price <= 0) return alert("Fill Name and Total Price!");
+        <div class="glass-panel rounded-[3rem] p-10 mb-12 no-print">
+            <h3 class="text-sm font-black text-slate-400 mb-6 uppercase tracking-widest italic">Performance Trend (1 Week)</h3>
+            <canvas id="salesChart" height="80"></canvas>
+        </div>
 
-        const now = new Date();
-        const order = {
-            id: Date.now(),
-            orderId: 'TN-' + Math.floor(1000 + Math.random() * 9000),
-            name, phone, service, price, paid, 
-            status: 'Pending',
-            date: now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-            time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-            fullDate: now.toLocaleString()
-        };
+        <div class="glass-panel rounded-[3rem] overflow-hidden no-print">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50/50 text-slate-400 text-[10px] font-black uppercase tracking-widest">
+                        <tr>
+                            <th class="px-10 py-6">Inv Code</th>
+                            <th class="px-10 py-6">Client</th>
+                            <th class="px-10 py-6">Total Bill</th>
+                            <th class="px-10 py-6">Payment</th>
+                            <th class="px-10 py-6 text-center">Status</th>
+                            <th class="px-10 py-6 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTable" class="divide-y divide-slate-100/50"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
 
-        db.unshift(order);
-        sync();
-        ['cName','cPhone','cService','cPrice','cPaid'].forEach(id => document.getElementById(id).value = '');
-    }
+    <div id="modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xl hidden flex items-center justify-center z-[100] p-4 no-print">
+        <div class="bg-white/95 w-full max-w-lg rounded-[3.5rem] p-12 shadow-2xl">
+            <h2 class="text-3xl font-black text-slate-800 mb-8 tracking-tighter">New TI NOVA Entry</h2>
+            <div class="grid grid-cols-2 gap-5">
+                <input type="text" id="clName" placeholder="Client Name" class="col-span-2 p-5 bg-slate-100 border-none rounded-2xl outline-none focus:ring-2 ring-indigo-400">
+                <input type="text" id="clPhone" placeholder="Phone" class="p-5 bg-slate-100 border-none rounded-2xl outline-none focus:ring-2 ring-indigo-400">
+                <input type="text" id="clService" placeholder="Service" class="p-5 bg-slate-100 border-none rounded-2xl outline-none focus:ring-2 ring-indigo-400">
+                <input type="number" id="clPaid" placeholder="Paid Amount" class="p-5 bg-slate-100 border-none rounded-2xl outline-none focus:ring-2 ring-indigo-400">
+                <input type="number" id="clDue" placeholder="Initial Due" class="p-5 bg-slate-100 border-none rounded-2xl outline-none focus:ring-2 ring-indigo-400">
+            </div>
+            <div class="flex gap-4 mt-10">
+                <button onclick="closeModal()" class="flex-1 py-5 text-slate-400 font-bold">Discard</button>
+                <button onclick="saveOrder()" class="flex-1 py-5 grad-complete text-white font-bold rounded-2xl shadow-xl active:scale-95 transition-transform">Confirm Order</button>
+            </div>
+        </div>
+    </div>
 
-    function deleteOrder(id) {
-        if(confirm("Delete this record?")) {
-            db = db.filter(o => o.id !== id);
-            sync();
-        }
-    }
+    <div id="invoiceModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-2xl hidden flex items-center justify-center z-[110] p-4">
+        <div class="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden border border-white/20 modal-content">
+            
+            <div class="grad-complete p-10 text-white flex justify-between items-end no-print relative overflow-hidden">
+                <div class="relative z-10">
+                    <h2 class="text-4xl font-extrabold uppercase italic tracking-tight relative">Official Receipt</h2>
+                    <p class="text-[10px] font-bold opacity-80 mt-2 tracking-[0.3em]" id="invD"></p>
+                </div>
+                <div class="text-right relative z-10">
+                    <p class="text-2xl font-black italic tracking-tighter">TI NOVA <span class="text-indigo-200">POS</span></p>
+                </div>
+            </div>
 
-    function clearDue(id) {
-        const idx = db.findIndex(o => o.id === id);
-        db[idx].paid = db[idx].price;
-        sync();
-    }
-
-    function toggleStatus(id) {
-        const idx = db.findIndex(o => o.id === id);
-        db[idx].status = db[idx].status === 'Pending' ? 'Completed' : 'Pending';
-        sync();
-    }
-
-    function viewInvoice(id) {
-        const item = db.find(o => o.id === id);
-        document.getElementById('invoiceData').innerHTML = `
-            <div class="invoice-row"><span>Order ID</span><b>#${item.orderId}</b></div>
-            <div class="invoice-row"><span>Customer</span><b>${item.name}</b></div>
-            <div class="invoice-row"><span>Status</span><b>${item.status}</b></div>
-            <div class="invoice-row" style="margin-top:10px; border-top:1px dashed #eee; padding-top:10px;"><span>Total Bill</span><b>$${item.price}</b></div>
-            <div class="invoice-row" style="color:var(--success)"><span>Total Paid</span><b>$${item.paid}</b></div>
-            <div class="invoice-row" style="color:var(--danger)"><span>Balance Due</span><b>$${item.price - item.paid}</b></div>
-        `;
-        document.getElementById('invoiceModal').style.display = 'flex';
-    }
-
-    function sync() {
-        localStorage.setItem('nova_final_v6', JSON.stringify(db));
-        render();
-    }
-
-    function render() {
-        const list = document.getElementById('orderList');
-        list.innerHTML = '';
-        let rev = 0, due = 0;
-
-        db.forEach(item => {
-            const itemDue = item.price - item.paid;
-            rev += item.paid;
-            due += itemDue;
-
-            list.innerHTML += `
-                <div class="order-row">
-                    <div class="order-meta">
-                        <span class="tag">#${item.orderId}</span>
-                        <b style="font-size:14px; display:block;">${item.name}</b>
-                        <div style="font-size:10px; color:var(--primary); font-weight:700;">🕒 ${item.date} • ${item.time}</div>
+            <div class="p-12 bg-white relative" id="printArea">
+                <div class="flex justify-between items-start mb-12 relative z-10">
+                    <div>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Billed To</p>
+                        <h4 class="text-3xl font-black text-slate-800 tracking-tight" id="invN"></h4>
+                        <p id="invP" class="text-slate-500 font-semibold text-sm mt-1"></p>
                     </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <div style="text-align:right;">
-                            <div style="font-weight:800; font-size:13px;">$${item.price}</div>
-                            ${itemDue > 0 ? `<button style="background:var(--success); color:white; border:none; padding:4px 8px; border-radius:6px; font-size:9px; font-weight:800; cursor:pointer;" onclick="clearDue(${item.id})">Pay $${itemDue}</button>` : `<span style="color:var(--success); font-size:10px; font-weight:800;">PAID ✓</span>`}
-                        </div>
-                        <button class="status-badge status-${item.status}" onclick="toggleStatus(${item.id})">${item.status}</button>
-                        <button style="border:none; background:none; font-size:20px; cursor:pointer;" onclick="viewInvoice(${item.id})">📄</button>
-                        <button style="border:none; background:#fff1f1; color:var(--danger); padding:8px; border-radius:10px; cursor:pointer;" onclick="deleteOrder(${item.id})">🗑️</button>
+                    <div class="text-right">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Invoice Number</p>
+                        <h4 class="text-xl font-black text-indigo-600 tracking-widest" id="invI"></h4>
                     </div>
                 </div>
-            `;
+
+                <div class="border-y-2 border-slate-50 py-8 mb-10 relative z-10">
+                    <div class="flex justify-between items-center px-4">
+                        <div>
+                            <p class="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-1">Description</p>
+                            <span id="invS" class="font-bold text-slate-700 text-lg uppercase tracking-tight"></span>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Amount</p>
+                            <span id="invT" class="font-black text-3xl text-slate-900"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end relative z-10">
+                    <div class="w-72 space-y-4">
+                        <div class="flex justify-between items-center px-4 py-3 bg-rose-50 rounded-xl">
+                            <span class="text-[11px] font-black text-rose-500 uppercase">Outstanding Due</span>
+                            <span class="font-black text-rose-600" id="invDue"></span>
+                        </div>
+                        <div class="flex justify-between items-center px-4 pt-6 border-t-4 border-double border-indigo-100">
+                            <span class="text-sm font-black text-slate-800 uppercase italic">Grand Total</span>
+                            <span class="text-4xl font-black text-indigo-600 tracking-tighter" id="invG"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-8 bg-slate-50 flex justify-between items-center no-print border-t border-slate-100">
+                <button onclick="closeInvoice()" class="px-8 py-4 font-bold text-slate-600 bg-white border border-slate-200 rounded-2xl shadow-sm hover:bg-slate-50 transition-all flex items-center gap-2">
+                    <i class="fas fa-arrow-left"></i> BACK TO HUB
+                </button>
+                <button onclick="window.print()" class="bg-slate-900 text-white px-12 py-4 rounded-2xl font-black shadow-2xl flex items-center gap-3 hover:scale-105 active:scale-95 transition-all">
+                    <i class="fas fa-print"></i> PRINT NOW
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let orders = [];
+        
+        const salesChart = new Chart(document.getElementById('salesChart'), {
+            type: 'line',
+            data: { labels: ['M', 'T', 'W', 'T', 'F', 'S', 'S'], datasets: [{ data: [15, 25, 20, 35, 30, 45, 40], borderColor: '#6366f1', fill: true, backgroundColor: 'rgba(99, 102, 241, 0.05)', tension: 0.4 }] },
+            options: { plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false } } } }
         });
 
-        document.getElementById('totalRevenue').innerText = '$' + rev.toLocaleString();
-        document.getElementById('totalDue').innerText = '$' + due.toLocaleString();
-    }
+        function openModal() { document.getElementById('modal').classList.remove('hidden'); }
+        function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+        function closeInvoice() { document.getElementById('invoiceModal').classList.add('hidden'); }
 
-    window.onload = render;
-</script>
+        function saveOrder() {
+            const name = document.getElementById('clName').value;
+            const paid = parseFloat(document.getElementById('clPaid').value) || 0;
+            const due = parseFloat(document.getElementById('clDue').value) || 0;
+            if(!name) return alert("Please fill Name");
+            
+            orders.unshift({
+                inv: 'NV-' + Math.floor(1000 + Math.random() * 9000),
+                name, paid, due, total: paid + due,
+                phone: document.getElementById('clPhone').value || 'N/A',
+                service: document.getElementById('clService').value || 'Service',
+                workStatus: 'Pending',
+                date: new Date().toLocaleDateString('en-GB')
+            });
+            renderTable(); closeModal();
+            document.querySelectorAll('#modal input').forEach(i => i.value = '');
+        }
+
+        function renderTable(data = orders) {
+            const tbody = document.getElementById('dataTable'); tbody.innerHTML = '';
+            let income = 0, dueTotal = 0, successCount = 0, pendingCount = 0;
+            
+            data.forEach((o, i) => {
+                if(o.workStatus !== 'Cancelled') {
+                    income += o.paid;
+                    dueTotal += o.due;
+                    if(o.workStatus === 'Success') successCount++;
+                    if(o.workStatus === 'Pending' || o.workStatus === 'Confirmed') pendingCount++;
+                }
+                
+                let statusClass = "bg-rose-500";
+                if(o.workStatus === 'Confirmed') statusClass = "bg-indigo-600";
+                if(o.workStatus === 'Success') statusClass = "bg-emerald-500 shadow-lg";
+                if(o.workStatus === 'Cancelled') statusClass = "bg-slate-400 opacity-50";
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-white/50 transition-colors">
+                        <td class="px-10 py-6 font-bold text-indigo-600">${o.inv}</td>
+                        <td class="px-10 py-6 font-bold text-slate-800">${o.name}</td>
+                        <td class="px-10 py-6 font-black">$${o.total.toLocaleString()}</td>
+                        <td class="px-10 py-6">
+                            <button onclick="settleDue(${i})" class="px-4 py-1.5 rounded-full text-[9px] font-black uppercase ${o.due > 0 && o.workStatus !== 'Cancelled' ? 'bg-rose-100 text-rose-500' : 'bg-emerald-100 text-emerald-600'}">
+                                ${o.due > 0 && o.workStatus !== 'Cancelled' ? 'Pay: $'+o.due : 'Settled'}
+                            </button>
+                        </td>
+                        <td class="px-10 py-6 text-center">
+                            <button onclick="toggleWork(${i})" class="px-5 py-2 rounded-2xl text-[10px] font-black uppercase text-white ${statusClass}">
+                                ${o.workStatus}
+                            </button>
+                        </td>
+                        <td class="px-10 py-6 text-right flex justify-end gap-4">
+                            <button onclick="viewInvoice(${i})" class="text-indigo-400 hover:text-indigo-600"><i class="fas fa-file-invoice text-lg"></i></button>
+                            <button onclick="cancelOrder(${i})" class="text-orange-300 hover:text-orange-500"><i class="fas fa-ban text-lg"></i></button>
+                            <button onclick="deleteOrder(${i})" class="text-rose-200 hover:text-rose-500"><i class="fas fa-trash text-lg"></i></button>
+                        </td>
+                    </tr>`;
+            });
+            document.getElementById('statIncome').innerText = income.toLocaleString();
+            document.getElementById('statDue').innerText = dueTotal.toLocaleString();
+            document.getElementById('statConfirmed').innerText = successCount;
+            document.getElementById('statPending').innerText = pendingCount;
+        }
+
+        function settleDue(i) {
+            if(orders[i].workStatus === 'Cancelled') return;
+            if(orders[i].due > 0) {
+                orders[i].paid += orders[i].due;
+                orders[i].due = 0;
+                renderTable();
+            }
+        }
+
+        function toggleWork(i) {
+            if(orders[i].workStatus === 'Cancelled') return;
+            const flow = ['Pending', 'Confirmed', 'Success'];
+            let currentIdx = flow.indexOf(orders[i].workStatus);
+            orders[i].workStatus = flow[(currentIdx + 1) % flow.length];
+            renderTable();
+        }
+
+        function cancelOrder(i) {
+            if(confirm("Cancel this order? Payments will be removed.")) {
+                orders[i].workStatus = 'Cancelled';
+                renderTable();
+            }
+        }
+
+        function deleteOrder(i) { if(confirm("Delete record?")) { orders.splice(i,1); renderTable(); } }
+
+        function searchOrders() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = orders.filter(o => o.name.toLowerCase().includes(q) || o.inv.toLowerCase().includes(q));
+            renderTable(filtered);
+        }
+
+        function viewInvoice(i) {
+            const o = orders[i];
+            document.getElementById('invN').innerText = o.name; document.getElementById('invI').innerText = o.inv;
+            document.getElementById('invP').innerText = o.phone; document.getElementById('invS').innerText = o.service;
+            document.getElementById('invT').innerText = `$${o.total.toLocaleString()}`; 
+            document.getElementById('invDue').innerText = `$${o.due.toLocaleString()}`;
+            document.getElementById('invG').innerText = `$${o.total.toLocaleString()}`; document.getElementById('invD').innerText = o.date;
+            document.getElementById('invoiceModal').classList.remove('hidden');
+        }
+    </script>
 </body>
 </html>
